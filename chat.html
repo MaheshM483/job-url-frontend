@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job URL - Direct Career Links</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Same UI/CSS as before for consistency, gradient background, card styles, responsive layout */
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    :root {
+      --primary:#4361ee; --secondary:#3a0ca3; --accent:#4cc9f0; --light:#f8f9fa; --dark:#212529;
+      --success:#4bb543; --warning:#ffcc00; --danger:#dc3545; --gray:#6c757d; --light-gray:#e9ecef;
+    }
+    body { background: linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d); background-size:400% 400%; animation:gradient 15s ease infinite; color:var(--light); min-height:100vh; padding-bottom:2rem; }
+    @keyframes gradient {0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%}}
+    .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+    header { padding:2rem 0; text-align:center; }
+    .logo { display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+    .logo i { font-size:2.5rem; margin-right:0.75rem; color:var(--accent); }
+    .logo h1 { font-size:2.5rem; font-weight:700; background: linear-gradient(to right,var(--accent),var(--light)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .tagline { font-size:1.2rem; margin-bottom:1.5rem; opacity:0.9; }
+    .search-section { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius:15px; padding:2rem; margin-bottom:2rem; box-shadow:0 8px 32px rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); }
+    .search-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.5rem; margin-bottom:1.5rem; }
+    .form-group { display:flex; flex-direction:column; }
+    .form-group label { margin-bottom:0.5rem; font-weight:500; }
+    .form-control { padding:0.75rem 1rem; border:none; border-radius:8px; background:rgba(255,255,255,0.9); color:var(--dark); font-size:1rem; transition:all 0.3s ease; }
+    .form-control:focus { outline:none; box-shadow:0 0 0 3px rgba(67,97,238,0.3); }
+    .btn { padding:0.75rem 1.5rem; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; transition:all 0.3s ease; display:inline-flex; align-items:center; justify-content:center; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-primary:hover { background:var(--secondary); transform:translateY(-2px); }
+    .btn-secondary { background: rgba(255,255,255,0.2); color:white; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.3); }
+    .actions { display:flex; gap:1rem; justify-content:center; }
+    .results-section { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius:15px; padding:2rem; box-shadow:0 8px 32px rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); }
+    .section-title { font-size:1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; }
+    .section-title i { margin-right:0.75rem; color:var(--accent); }
+    .results-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:1.5rem; }
+    .job-card { background: rgba(255,255,255,0.15); border-radius:12px; padding:1.5rem; transition:all 0.3s ease; border:1px solid rgba(255,255,255,0.1); }
+    .job-card:hover { transform:translateY(-5px); background: rgba(255,255,255,0.2); box-shadow:0 10px 20px rgba(0,0,0,0.2); }
+    .job-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+    .company-name { font-weight:700; font-size:1.2rem; color:var(--accent); }
+    .job-type { background:var(--primary); padding:0.25rem 0.75rem; border-radius:20px; font-size:0.8rem; font-weight:500; }
+    .job-title { font-size:1.1rem; font-weight:600; margin-bottom:0.75rem; }
+    .job-details { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; font-size:0.9rem; }
+    .job-detail { display:flex; align-items:center; }
+    .job-detail i { margin-right:0.5rem; color:var(--accent); }
+    .job-url { display:block; background:var(--primary); color:white; text-align:center; padding:0.75rem; border-radius:8px; text-decoration:none; font-weight:600; transition:all 0.3s ease; }
+    .job-url:hover { background:var(--secondary); transform:translateY(-2px); }
+    .no-results { text-align:center; padding:2rem; grid-column:1/-1; }
+    .no-results i { font-size:3rem; margin-bottom:1rem; color:var(--accent); }
+    .loading { text-align:center; padding:2rem; grid-column:1/-1; }
+    .spinner { border:5px solid rgba(255,255,255,0.3); border-radius:50%; border-top:5px solid var(--accent); width:50px; height:50px; animation:spin 1s linear infinite; margin:0 auto 1rem; }
+    @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    footer { text-align:center; margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.1); font-size:0.9rem; opacity:0.8; }
+    .match-badge { background:var(--success); color:white; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.7rem; margin-left:0.5rem; }
+    .similar-match { background:var(--warning); color:var(--dark); }
+    .results-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .results-count { font-size:1rem; opacity:0.8; }
+    .info-box { background:rgba(76,201,240,0.2); border-radius:8px; padding:1rem; margin-bottom:1.5rem; border-left:4px solid var(--accent); }
+    .info-box p { margin-bottom:0.5rem; }
+    .info-box p:last-child { margin-bottom:0; }
+    @media (max-width:768px) { .search-form{grid-template-columns:1fr;} .results-grid{grid-template-columns:1fr;} .logo h1{font-size:2rem;} .results-header{flex-direction:column;align-items:flex-start;gap:0.5rem;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo"><i class="fas fa-link"></i><h1>Job URL</h1></div>
+      <p class="tagline">Direct links to company career pages. No sign-up required. Always free.</p>
+    </header>
+
+    <section class="search-section">
+      <h2 class="section-title"><i class="fas fa-search"></i> Find Your Dream Job</h2>
+      <div class="info-box">
+        <p><i class="fas fa-info-circle"></i> Enter any company name, job title, and location to get direct career page links.</p>
+      </div>
+
+      <form class="search-form" id="searchForm">
+        <div class="form-group"><label for="company">Company Name</label><input type="text" id="company" class="form-control" placeholder="e.g. Mastercard, Apple, Google" required></div>
+        <div class="form-group"><label for="jobTitle">Job Title</label><input type="text" id="jobTitle" class="form-control" placeholder="e.g. Software Engineer, Data Analyst" required></div>
+        <div class="form-group"><label for="location">Location</label><input type="text" id="location" class="form-control" placeholder="e.g. USA, India, Remote" required></div>
+        <div class="form-group"><label for="experience">Years of Experience</label><select id="experience" class="form-control"><option value="">Any</option><option value="0-2">0-2 years</option><option value="3-5">3-5 years</option><option value="5-10">5-10 years</option><option value="10+">10+ years</option></select></div>
+        <div class="form-group"><label for="jobType">Job Type</label><select id="jobType" class="form-control"><option value="">Any</option><option value="Full-time">Full-time</option><option value="Part-time">Part-time</option><option value="Contract">Contract</option><option value="Internship">Internship</option><option value="Remote">Remote</option></select></div>
+        <div class="form-group"><label for="postedDate">Posted Date</label><select id="postedDate" class="form-control"><option value="">Any time</option><option value="1">Last 24 hours</option><option value="3">Last 3 days</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select></div>
+      </form>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="searchBtn"><i class="fas fa-search"></i>&nbsp; Search Jobs</button>
+      </div>
+    </section>
+
+    <section class="results-section">
+      <div class="results-header">
+        <h2 class="section-title"><i class="fas fa-briefcase"></i> Results</h2>
+        <span class="results-count" id="resultsCount">0 jobs found</span>
+      </div>
+      <div class="results-grid" id="resultsGrid">
+        <!-- Job cards will be appended here -->
+      </div>
+    </section>
+
+    <footer>
+      &copy; 2025 Job URL | Built with ❤️ for job seekers
+    </footer>
+  </div>
+
+  <script>
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsGrid = document.getElementById('resultsGrid');
+    const resultsCount = document.getElementById('resultsCount');
+    const API_URL = "https://job-url-backend.onrender.com"; // replace with your deployed backend
+
+    async function searchJobs() {
+      const company = document.getElementById('company').value.trim();
+      const jobTitle = document.getElementById('jobTitle').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const experience = document.getElementById('experience').value;
+      const jobType = document.getElementById('jobType').value;
+      const postedDate = document.getElementById('postedDate').value;
+
+      if (!company || !jobTitle || !location) {
+        alert("Please fill in company, job title, and location.");
+        return;
+      }
+
+      resultsGrid.innerHTML = `<div class="loading"><div class="spinner"></div>Searching...</div>`;
+      resultsCount.textContent = "Searching...";
+
+      try {
+        const res = await fetch(`${API_URL}?company=${encodeURIComponent(company)}&title=${encodeURIComponent(jobTitle)}&location=${encodeURIComponent(location)}&experience=${encodeURIComponent(experience)}&type=${encodeURIComponent(jobType)}&posted=${encodeURIComponent(postedDate)}`);
+        const data = await res.json();
+
+        if (!data.jobs || data.jobs.length === 0) {
+          resultsGrid.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>No jobs found. Try different keywords.</p></div>`;
+          resultsCount.textContent = "0 jobs found";
+          return;
+        }
+
+        resultsGrid.innerHTML = "";
+        data.jobs.forEach(job => {
+          const card = document.createElement('div');
+          card.classList.add('job-card');
+          card.innerHTML = `
+            <div class="job-header">
+              <span class="company-name">${job.company}</span>
+              <span class="job-type">${job.type || 'N/A'}</span>
+            </div>
+            <div class="job-title">${job.title}</div>
+            <div class="job-details">
+              <div class="job-detail"><i class="fas fa-map-marker-alt"></i>${job.location}</div>
+              <div class="job-detail"><i class="fas fa-calendar-alt"></i>${job.postedDate || 'N/A'}</div>
+              ${job.match ? `<div class="job-detail match-badge">${job.match}% match</div>` : ""}
+            </div>
+            <a href="${job.url}" target="_blank" class="job-url">Apply Now</a>
+          `;
+          resultsGrid.appendChild(card);
+        });
+
+        resultsCount.textContent = `${data.jobs.length} jobs found`;
+      } catch (err) {
+        resultsGrid.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>Error fetching jobs. Try again later.</p></div>`;
+        resultsCount.textContent = "0 jobs found";
+        console.error(err);
+      }
+    }
+
+    searchBtn.addEventListener('click', searchJobs);
+  </script>
+</body>
+</html>
