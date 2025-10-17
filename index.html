@@ -54,61 +54,56 @@
 </div>
 
 <script>
-const searchBtn = document.getElementById('searchBtn');
-const resultsGrid = document.getElementById('resultsGrid');
-const resultsCount = document.getElementById('resultsCount');
-const API_URL = "https://job-url-backend.onrender.com/api/jobs"; // replace with your deployed backend
+  // Use your deployed Render backend
+  const API_URL = "https://job-url-backend.onrender.com/api/jobs";
+  
+  const searchBtn = document.getElementById('searchBtn');
+  const resultsGrid = document.getElementById('resultsGrid');
 
-async function searchJobs() {
-  const company = document.getElementById('company').value.trim();
-  const jobTitle = document.getElementById('jobTitle').value.trim();
+  async function searchJobs() {
+    const company = document.getElementById('company').value.trim();
+    const jobTitle = document.getElementById('jobTitle').value.trim();
+    const location = document.getElementById('location').value.trim();
+    const jobType = document.getElementById('jobType').value || "Full-time";
 
-  if (!company || !jobTitle) {
-    alert("Please fill in company and job title.");
-    return;
-  }
-
-  resultsGrid.innerHTML = `<div class="loading"><div class="spinner"></div>Searching...</div>`;
-  resultsCount.textContent = "Searching...";
-
-  try {
-    const res = await fetch(`${API_URL}?company=${encodeURIComponent(company)}&title=${encodeURIComponent(jobTitle)}`);
-    const data = await res.json();
-
-    if (!data.jobs || data.jobs.length === 0) {
-      resultsGrid.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>No jobs found.</p></div>`;
-      resultsCount.textContent = "0 jobs found";
+    if (!company || !jobTitle || !location) {
+      alert("Please fill in company, job title, and location.");
       return;
     }
 
-    resultsGrid.innerHTML = "";
-    data.jobs.forEach(job => {
-      const card = document.createElement('div');
-      card.classList.add('job-card');
-      card.innerHTML = `
-      <div class="job-header">
-        <span class="company-name">${job.company}</span>
-        <span class="job-type">${job.type || 'N/A'}</span>
-      </div>
-      <div class="job-title">${job.title}</div>
-      <div class="job-details">
-        <div class="job-detail"><i class="fas fa-map-marker-alt"></i>${job.location}</div>
-        <div class="job-detail"><i class="fas fa-calendar-alt"></i>${job.posted}</div>
-      </div>
-      <a href="${job.url}" target="_blank" class="job-url">Apply Now</a>`;
-      resultsGrid.appendChild(card);
-    });
+    resultsGrid.innerHTML = `<p>Searching...</p>`;
 
-    resultsCount.textContent = `${data.jobs.length} job(s) found`;
+    try {
+      const res = await fetch(`${API_URL}?company=${encodeURIComponent(company)}&title=${encodeURIComponent(jobTitle)}&location=${encodeURIComponent(location)}&type=${encodeURIComponent(jobType)}`);
+      const data = await res.json();
 
-  } catch (err) {
-    console.error(err);
-    resultsGrid.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>Error fetching jobs. Try again later.</p></div>`;
-    resultsCount.textContent = "0 jobs found";
+      console.log("API Response:", data); // For debugging
+
+      if (!data.jobs || data.jobs.length === 0) {
+        resultsGrid.innerHTML = `<p>No jobs found. Try different search terms.</p>`;
+        return;
+      }
+
+      resultsGrid.innerHTML = "";
+      data.jobs.forEach(job => {
+        const card = document.createElement('div');
+        card.classList.add('job-card');
+        card.innerHTML = `
+          <strong>${job.company}</strong><br>
+          ${job.title}<br>
+          ${job.location}<br>
+          <a href="${job.url}" target="_blank" class="job-url">Apply Now</a>
+        `;
+        resultsGrid.appendChild(card);
+      });
+
+    } catch (err) {
+      console.error("Frontend Error:", err);
+      resultsGrid.innerHTML = `<p>Error fetching jobs. Try again later.</p>`;
+    }
   }
-}
 
-searchBtn.addEventListener('click', searchJobs);
+  searchBtn.addEventListener('click', searchJobs);
 </script>
 </body>
 </html>
