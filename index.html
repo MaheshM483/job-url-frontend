@@ -1,93 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart Job Finder</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      padding: 30px;
-      text-align: center;
-    }
-    h1 { color: #333; }
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      display: inline-block;
-      margin-bottom: 20px;
-    }
-    input, button {
-      margin: 8px;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover { background-color: #0056b3; }
-    .results {
-      margin-top: 20px;
-      text-align: left;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    a {
-      display: block;
-      margin: 8px 0;
-      color: #007bff;
-      text-decoration: none;
-    }
-    a:hover { text-decoration: underline; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job URL - Direct Career Links</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* keep your full original styles here */
+</style>
 </head>
 <body>
-  <h1>Smart Job Finder</h1>
-  <form id="jobForm">
-    <input type="text" id="company" placeholder="Company (e.g. Google)" required />
-    <input type="text" id="jobTitle" placeholder="Job Title (e.g. Data Analyst)" required />
-    <input type="text" id="location" placeholder="Location (optional)" />
-    <button type="submit">Search Jobs</button>
-  </form>
-  <div class="results" id="results"></div>
+<div class="container">
+<header>
+<div class="logo"><i class="fas fa-link"></i><h1>Job URL</h1></div>
+<p class="tagline">Direct links to company career pages. No sign-up required. Always free.</p>
+</header>
 
-  <script>
-    document.getElementById("jobForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+<section class="search-section">
+<h2 class="section-title"><i class="fas fa-search"></i> Find Your Dream Job</h2>
+<div class="info-box">
+<p><i class="fas fa-info-circle"></i> Enter any company name and job title to get live job posting URLs.</p>
+</div>
 
-      const company = document.getElementById("company").value.trim();
-      const jobTitle = document.getElementById("jobTitle").value.trim();
-      const location = document.getElementById("location").value.trim();
+<form class="search-form" id="searchForm">
+<div class="form-group">
+<label for="company">Company Name</label>
+<input type="text" id="company" class="form-control" placeholder="e.g. Apple, Google" required>
+</div>
+<div class="form-group">
+<label for="jobTitle">Job Title</label>
+<input type="text" id="jobTitle" class="form-control" placeholder="e.g. Data Analyst" required>
+</div>
+</form>
 
-      const response = await fetch("http://localhost:5000/api/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company, jobTitle, location }),
-      });
+<div class="actions">
+<button class="btn btn-primary" id="searchBtn"><i class="fas fa-search"></i>&nbsp; Search Jobs</button>
+</div>
+</section>
 
-      const data = await response.json();
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "";
+<section class="results-section">
+<div class="results-header">
+<h2 class="section-title"><i class="fas fa-briefcase"></i> Results</h2>
+<span class="results-count" id="resultsCount">0 jobs found</span>
+</div>
+<div class="results-grid" id="resultsGrid">
+<!-- Job cards will appear here -->
+</div>
+</section>
 
-      if (data.results && data.results.length > 0) {
-        data.results.forEach((url) => {
-          const link = document.createElement("a");
-          link.href = url;
-          link.textContent = url;
-          link.target = "_blank";
-          resultsDiv.appendChild(link);
-        });
-      } else {
-        resultsDiv.innerHTML = "<p>No results found.</p>";
-      }
+<footer>
+&copy; 2025 Job URL | Built with ❤️ for job seekers
+</footer>
+</div>
+
+<script>
+const searchBtn = document.getElementById('searchBtn');
+const resultsGrid = document.getElementById('resultsGrid');
+const resultsCount = document.getElementById('resultsCount');
+const API_URL = "https://job-url-backend.onrender.com/api/jobs"; // replace with your deployed backend
+
+async function searchJobs() {
+  const company = document.getElementById('company').value.trim();
+  const jobTitle = document.getElementById('jobTitle').value.trim();
+
+  if (!company || !jobTitle) {
+    alert("Please fill in company and job title.");
+    return;
+  }
+
+  resultsGrid.innerHTML = `<div class="loading"><div class="spinner"></div>Searching...</div>`;
+  resultsCount.textContent = "Searching...";
+
+  try {
+    const res = await fetch(`${API_URL}?company=${encodeURIComponent(company)}&title=${encodeURIComponent(jobTitle)}`);
+    const data = await res.json();
+
+    if (!data.jobs || data.jobs.length === 0) {
+      resultsGrid.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>No jobs found.</p></div>`;
+      resultsCount.textContent = "0 jobs found";
+      return;
+    }
+
+    resultsGrid.innerHTML = "";
+    data.jobs.forEach(job => {
+      const card = document.createElement('div');
+      card.classList.add('job-card');
+      card.innerHTML = `
+      <div class="job-header">
+        <span class="company-name">${job.company}</span>
+        <span class="job-type">${job.type || 'N/A'}</span>
+      </div>
+      <div class="job-title">${job.title}</div>
+      <div class="job-details">
+        <div class="job-detail"><i class="fas fa-map-marker-alt"></i>${job.location}</div>
+        <div class="job-detail"><i class="fas fa-calendar-alt"></i>${job.posted}</div>
+      </div>
+      <a href="${job.url}" target="_blank" class="job-url">Apply Now</a>`;
+      resultsGrid.appendChild(card);
     });
-  </script>
+
+    resultsCount.textContent = `${data.jobs.length} job(s) found`;
+
+  } catch (err) {
+    console.error(err);
+    resultsGrid.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>Error fetching jobs. Try again later.</p></div>`;
+    resultsCount.textContent = "0 jobs found";
+  }
+}
+
+searchBtn.addEventListener('click', searchJobs);
+</script>
 </body>
 </html>
