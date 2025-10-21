@@ -95,7 +95,7 @@ footer { text-align: center; color: white; margin-top: 2rem; opacity: 0.8; }
 </div>
 
 <script>
-  const API_URL = "https://job-url-backend.onrender.com/api/jobs";
+  const API_URL = "https://job-url-python-backend.onrender.com/api/jobs";
   
   const searchBtn = document.getElementById('searchBtn');
   const resultsGrid = document.getElementById('resultsGrid');
@@ -104,79 +104,72 @@ footer { text-align: center; color: white; margin-top: 2rem; opacity: 0.8; }
   let searchCooldown = false;
 
   async function searchJobs() {
-    if (searchCooldown) {
-      alert("Please wait a few seconds between searches to avoid being blocked by search engines.");
-      return;
-    }
+  const company = document.getElementById('company').value.trim();
+  const jobTitle = document.getElementById('jobTitle').value.trim();
+  const location = document.getElementById('location').value.trim();
+  const jobType = document.getElementById('jobType').value || "Full-time";
 
-    const company = document.getElementById('company').value.trim();
-    const jobTitle = document.getElementById('jobTitle').value.trim();
-    const location = document.getElementById('location').value.trim();
-    const jobType = document.getElementById('jobType').value || "";
-
-    if (!company || !jobTitle || !location) {
-      alert("Please fill in company, job title, and location.");
-      return;
-    }
-
-    // Start cooldown
-    searchCooldown = true;
-    searchBtn.disabled = true;
-    searchBtn.innerHTML = '<i class="fas fa-clock"></i> Waiting...';
-    
-    resultsGrid.innerHTML = `<div class="searching-message"><i class="fas fa-spinner fa-spin"></i> Searching for jobs... (This may take 10-15 seconds)</div>`;
-    resultsCount.textContent = "Searching...";
-
-    // Re-enable search after 15 seconds
-    setTimeout(() => { 
-      searchCooldown = false; 
-      searchBtn.disabled = false;
-      searchBtn.innerHTML = '<i class="fas fa-search"></i> Search Jobs';
-    }, 15000);
-
-    try {
-      const queryParams = new URLSearchParams({
-        company: company,
-        title: jobTitle,
-        location: location,
-        type: jobType
-      });
-
-      const res = await fetch(`${API_URL}?${queryParams}`);
-      const data = await res.json();
-
-      console.log("API Response:", data);
-
-      if (!data.jobs || data.jobs.length === 0) {
-        resultsGrid.innerHTML = `<div class="no-results"><i class="fas fa-search"></i> ${data.message || "No jobs found. Try different search terms."}</div>`;
-        resultsCount.textContent = "0 jobs found";
-        return;
-      }
-
-      resultsCount.textContent = `${data.jobs.length} job${data.jobs.length > 1 ? 's' : ''} found`;
-      resultsGrid.innerHTML = "";
-      
-      data.jobs.forEach(job => {
-        const card = document.createElement('div');
-        card.classList.add('job-card');
-        card.innerHTML = `
-          <h3>${job.title}</h3>
-          <p><strong>Company:</strong> ${job.company}</p>
-          <p><strong>Location:</strong> ${job.location}</p>
-          <p><strong>Type:</strong> ${job.type}</p>
-          <a href="${job.url}" target="_blank" class="job-url">
-            <i class="fas fa-external-link-alt"></i> View Job Posting
-          </a>
-        `;
-        resultsGrid.appendChild(card);
-      });
-
-    } catch (err) {
-      console.error("Frontend Error:", err);
-      resultsGrid.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Search temporarily limited. Please wait 1 minute and try again.</div>`;
-      resultsCount.textContent = "Search Limited";
-    }
+  if (!company || !jobTitle || !location) {
+    alert("Please fill in company, job title, and location.");
+    return;
   }
+
+  resultsGrid.innerHTML = `<div class="searching-message"><i class="fas fa-spinner fa-spin"></i> Searching... (This may take a few seconds)</div>`;
+  resultsCount.textContent = "Searching...";
+
+  try {
+    const queryParams = new URLSearchParams({
+      company: company,
+      title: jobTitle,
+      location: location,
+      job_type: jobType
+    });
+
+    const res = await fetch(`${API_URL}?${queryParams}`);
+    const data = await res.json();
+
+    console.log("API Response:", data);
+
+    if (!data.jobs || data.jobs.length === 0) {
+      resultsGrid.innerHTML = `<div class="no-results">
+        <i class="fas fa-info-circle"></i> 
+        No specific job postings found. Try visiting the company's career site directly.
+      </div>`;
+      resultsCount.textContent = "0 jobs found";
+      return;
+    }
+
+    resultsCount.textContent = `${data.jobs.length} result${data.jobs.length > 1 ? 's' : ''} found`;
+    resultsGrid.innerHTML = "";
+    
+    data.jobs.forEach(job => {
+      const card = document.createElement('div');
+      card.classList.add('job-card');
+      
+      const noteHTML = job.note ? `<p class="job-note"><i class="fas fa-info-circle"></i> ${job.note}</p>` : '';
+      
+      card.innerHTML = `
+        <h3>${job.title}</h3>
+        <p><strong>Company:</strong> ${job.company}</p>
+        <p><strong>Location:</strong> ${job.location}</p>
+        <p><strong>Type:</strong> ${job.type}</p>
+        ${noteHTML}
+        <a href="${job.url}" target="_blank" class="job-url">
+          <i class="fas fa-external-link-alt"></i> View Details
+        </a>
+      `;
+      resultsGrid.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("Frontend Error:", err);
+    resultsGrid.innerHTML = `<div class="error-message">
+      <i class="fas fa-exclamation-triangle"></i> 
+      Connection issue. Please check your internet and try again.
+    </div>`;
+    resultsCount.textContent = "Error";
+  }
+}
 
   searchBtn.addEventListener('click', searchJobs);
 
